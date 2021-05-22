@@ -1,34 +1,102 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class Player 
+public class Player : MonoBehaviour
 {
+    [SerializeField] private Text _playerNameRightPanelText;
+    [SerializeField] private Text _playerNameUnderCastleText;
+    [SerializeField] private Text _playerGoldText;
+    [SerializeField] private Transform _playerCastle;
+    [SerializeField] private Caravan _playerCaravan;
     public bool caravanIsGo { get; set; }
     public int Gold { get; set; }
-    public string NicName { get; }
-    public GameObject Castle { get;}
+    public string NicName { get; set; }
     public int CastleLvl { get; set; }
     public int CriminalLvl { get; set; }
-    public List<Goods> Goods { get; set; } = new List<Goods>();
-    public List<Goods> Caravan { get; set; }  = new List<Goods>();
-    public int[] caravanGoods { get; set; } = new int[5];
+    public List<int> HavingGoodsIds { get; set; } = new List<int>();
+    public Caravan Caravan { get; set; }
+    public List<int> caravanGoods { get; set; } = new List<int>();
     public bool isSherif { get; set; }
-
-public Player(string nicname,GameObject castle)
+    private int exchangeCount;
+    private int maxExchangeCount { get; set; }
+    public void Awake()
     {
-        NicName = nicname;
+        Caravan = _playerCaravan;
+    }
+    public void DoExchange(ProductController productController)
+    {
+        if (exchangeCount + 1 <= maxExchangeCount)
+        {
+            exchangeCount += 1;
+            productController.OnExchancgeClick();
+        }
+        else
+        {
+            Debug.Log("Количество обменов исчерпано");
+        }
+    }
+
+    public void ActivatePlayer()
+    {
+        this.gameObject.SetActive(true);
+        NicName = this.name;
         Gold = 50;
         CastleLvl = 1;
         CriminalLvl = 0;
         caravanIsGo = false;
         isSherif = false;
-        for(var i = 1; i <9; i++)
+        exchangeCount = 0;
+        maxExchangeCount = 5;
+        for (var i = 1; i < 9; i++)
         {
-            Goods.Add(new Goods(Random.Range(1, 9)));
-            Goods.Add(new Goods(Random.Range(11, 19)));
-
+            HavingGoodsIds.Add(Random.Range(0, 8));
+            HavingGoodsIds.Add(Random.Range(8, 16));
         }
-        Castle = castle;
-        Castle.tag = "ActiveCastle";
+        _playerNameUnderCastleText.text = NicName;
+    }
+    void OnMouseDown()
+    {
+        Game.SetCurrentPlayer(this);
+        RefreshPlayerInfo();
+    }
+    public void RefreshPlayerInfo()
+    {
+        _playerNameRightPanelText.text = NicName;
+        _playerGoldText.text = Gold.ToString();
+        ClearChildren(ProductControllers.ProductsControllers);
+        ProductControllers.ClearProducts();
+        foreach (Transform productsParent in ProductControllers.ProductsControllers)
+        {
+            foreach (int goodId in HavingGoodsIds)
+            {
+                productsParent.GetComponent<ProductController>().CreateProducts(goodId);
+            }
+        }
+    }
+    private static void ClearChildren(Transform[] productsP)
+    {
+
+        var caravanCells = GameObject.FindGameObjectsWithTag("caravanCell");
+        foreach (GameObject cell in caravanCells)
+        {
+            if (cell.transform.childCount > 0)
+            {
+                int j = 0;
+                GameObject[] allChildren = new GameObject[cell.transform.childCount];
+                foreach (Transform child in cell.transform)
+                {
+                    allChildren[j] = child.gameObject;
+                    j += 1;
+                }
+                foreach (GameObject child in allChildren)
+                {
+                    if (child != null)
+                        DestroyImmediate(child.gameObject);
+                }
+
+            }
+        }
+
     }
 }

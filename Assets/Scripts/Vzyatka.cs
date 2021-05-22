@@ -3,17 +3,11 @@ using UnityEngine.UI;
 
 public class Vzyatka : MonoBehaviour
 {
-    public Transform TextVzyatky;
-    public void giveVzyatka()
-    {
-
-    }
+    [SerializeReference] private Text TextVzyatky;
 
     public void ChangeGoldRange(float value)
     {
-        var sliderComp = TextVzyatky.GetComponent<Text>();
-        sliderComp.text = value.ToString();
-
+        TextVzyatky.text = value.ToString();
 
     }
  }
