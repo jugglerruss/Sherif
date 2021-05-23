@@ -34,7 +34,10 @@ public class ProductControllers : MonoBehaviour
             foreach (Transform child in allChildren)
             {
                 if (child != null)
-                    DestroyImmediate(child.gameObject);
+                {
+                    child.SetParent(controller.GetChild(0));
+                    child.transform.position = new Vector3(20000f, 0, 0);
+                }
             }
         }
     }

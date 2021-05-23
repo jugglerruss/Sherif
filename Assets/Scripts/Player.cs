@@ -9,14 +9,15 @@ public class Player : MonoBehaviour
     [SerializeField] private Text _playerGoldText;
     [SerializeField] private Transform _playerCastle;
     [SerializeField] private Caravan _playerCaravan;
+    private List<int> havingGoodsIds { get; set; } = new List<int>();
     public bool caravanIsGo { get; set; }
     public int Gold { get; set; }
     public string NicName { get; set; }
     public int CastleLvl { get; set; }
     public int CriminalLvl { get; set; }
-    public List<int> HavingGoodsIds { get; set; } = new List<int>();
+    public List<Product> HaveProducts { get; set; } = new List<Product>();
     public Caravan Caravan { get; set; }
-    public List<int> caravanGoods { get; set; } = new List<int>();
+    public List<Product> caravanGoods { get; set; } = new List<Product>();
     public bool isSherif { get; set; }
     private int exchangeCount;
     private int maxExchangeCount { get; set; }
@@ -50,27 +51,34 @@ public class Player : MonoBehaviour
         maxExchangeCount = 5;
         for (var i = 1; i < 9; i++)
         {
-            HavingGoodsIds.Add(Random.Range(0, 8));
-            HavingGoodsIds.Add(Random.Range(8, 16));
+            havingGoodsIds.Add(Random.Range(0, 8));
+            havingGoodsIds.Add(Random.Range(8, 16));
         }
         _playerNameUnderCastleText.text = NicName;
+        foreach (Transform productsController in ProductControllers.ProductsControllers)
+        {
+            foreach (int goodId in havingGoodsIds)
+            {
+                HaveProducts.Add(productsController.GetComponent<ProductController>().CreateProducts(goodId));
+            }
+        }
     }
     void OnMouseDown()
     {
-        Game.SetCurrentPlayer(this);
+        PlayerController.SetCurrentPlayer(this);
         RefreshPlayerInfo();
     }
     public void RefreshPlayerInfo()
     {
         _playerNameRightPanelText.text = NicName;
         _playerGoldText.text = Gold.ToString();
-        ClearChildren(ProductControllers.ProductsControllers);
+        //ClearChildren(ProductControllers.ProductsControllers);
         ProductControllers.ClearProducts();
-        foreach (Transform productsParent in ProductControllers.ProductsControllers)
+        foreach (Transform productsController in ProductControllers.ProductsControllers)
         {
-            foreach (int goodId in HavingGoodsIds)
+            foreach (Product product in HaveProducts)
             {
-                productsParent.GetComponent<ProductController>().CreateProducts(goodId);
+                if (product!=null) productsController.GetComponent<ProductController>().ShowProducts(product);
             }
         }
     }

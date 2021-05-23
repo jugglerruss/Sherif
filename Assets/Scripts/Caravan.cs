@@ -8,25 +8,26 @@ public class Caravan : MonoBehaviour
 {
     [SerializeReference] private Transform[] _toCaravanCells;
     [SerializeField] private Slider _slider;
-    [SerializeReference] private Text _textMaxVzyatky;
+    [SerializeField] private Customs _customs;
 
-    private int[] products = new int[5]; 
     public void CaravanGoClick()
     {
-        if (!Game.GetCurrentPlayer().caravanIsGo)
+        var player = PlayerController.GetCurrentPlayer();
+        if (!player.caravanIsGo)
         {
-            Game.GetCurrentPlayer().caravanIsGo = true;
-            products = Game.GetCurrentPlayer().caravanGoods.ToArray();
-            Game.GetCurrentPlayer().caravanGoods = new List<int> { };
-            foreach (int goodIndex in products)
-            {                 
-               Game.GetCurrentPlayer().HavingGoodsIds.Remove(goodIndex);                
+            player.caravanIsGo = true;
+            foreach (Product product in player.HaveProducts)
+            {
+                if (product != null) Debug.Log(product.Id);
             }
-            _slider.maxValue = Game.GetCurrentPlayer().Gold;
-            _textMaxVzyatky.text = Game.GetCurrentPlayer().Gold.ToString();
+            foreach (Product product in player.caravanGoods)
+            {
+                player.HaveProducts.Remove(product);
+            }
+            _customs.OpenCustomHouse(player.Gold, player.caravanGoods);
+            player.caravanGoods.Clear();
         }
-        Debug.Log(products.ToString());
-        Game.GetCurrentPlayer().RefreshPlayerInfo();
+        player.RefreshPlayerInfo();
     }
     public Transform GetEmptyCell(){
         var i = -1;

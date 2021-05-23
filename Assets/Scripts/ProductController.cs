@@ -16,7 +16,7 @@ public class ProductController : MonoBehaviour
         _productPrice.text = good.Price.ToString();
         _productPenalty.text = good.Penalty.ToString();
     }
-    public void CreateProducts(int goodId)
+    public Product CreateProducts(int goodId)
     {
         if(goodId == _productId)
         {
@@ -25,20 +25,34 @@ public class ProductController : MonoBehaviour
             productItem.GetComponent<Product>().ProductParent = this.transform;
             var SRenderer = productItem.GetComponent<SpriteRenderer>();
             SRenderer.sortingOrder = SRenderer.sortingOrder + 2 - this.transform.childCount;
-        }        
+            return productItem.GetComponent<Product>();
+        }
+        return null;
     }
+    public void ShowProducts(Product product)
+    {
+        if (product.Id == _productId)
+        {
+            product.transform.position = this.transform.position + new Vector3((this.transform.childCount - 1) * 0.2f, 0, 0);
+            product.transform.SetParent(this.transform);
+            product.GetComponent<Product>().ProductParent = this.transform;
+            var SRenderer = product.GetComponent<SpriteRenderer>();
+            SRenderer.sortingOrder = SRenderer.sortingOrder + 2 - this.transform.childCount;
+        }
+     }
     public void OnExchancgeClick()
     {
+        var player = PlayerController.GetCurrentPlayer();
         var GoodsCount = this.transform.childCount;
         if (GoodsCount > 1 && _productId != 0)
         {
-            var itemsToRemove = Game.GetCurrentPlayer().HavingGoodsIds.Where(Id => Id == _productId);
+            var itemsToRemove = player.HaveProducts.Where(p => p.Id == _productId);
             if (itemsToRemove.Count() > 0)
             {
-                Game.GetCurrentPlayer().HavingGoodsIds.Remove(itemsToRemove.First());
+                player.HaveProducts.Remove(itemsToRemove.First());
                 var RandomNum = Random.Range(0, _productId-1);
-                Game.GetCurrentPlayer().HavingGoodsIds.Add(RandomNum);
-                Game.GetCurrentPlayer().RefreshPlayerInfo();
+                player.HaveProducts.Add(CreateProducts(RandomNum));
+                player.RefreshPlayerInfo();
             }
         }
     }

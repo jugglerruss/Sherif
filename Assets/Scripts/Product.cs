@@ -75,35 +75,38 @@ public class Product : MonoBehaviour
     };
     void OnMouseDown()
     {
-        var player = Game.GetCurrentPlayer();
+        var player = PlayerController.GetCurrentPlayer();
         var ParentConteiner = this.transform.parent;
         if (ParentConteiner == ProductParent)
         {
             var caravanCell = player.Caravan.GetEmptyCell();
-
             var GoodsCount = ParentConteiner.transform.childCount;
             if (GoodsCount > 1 && caravanCell != null)
             {
-                var Good = ParentConteiner.transform.GetChild(GoodsCount - 1);
-                Good.SetParent(caravanCell.transform);
-                Good.SetPositionAndRotation(caravanCell.transform.position, Quaternion.identity);
-                player.caravanGoods.Add(Good.GetComponent<Product>().Id);
+                MoveProductToCaravanCell(ParentConteiner, GoodsCount, caravanCell, player);
             }
         }
         else if (player.Caravan.ConteinsProduct(ParentConteiner))
         {
-            transform.SetPositionAndRotation(ProductParent.position + new Vector3((ProductParent.childCount - 1) * 0.2f, 0, 0), Quaternion.identity);
-            transform.SetParent(ProductParent);
-            var SRenderer = transform.GetComponent<SpriteRenderer>();
-            SRenderer.sortingOrder = SRenderer.sortingOrder + 2 - ProductParent.childCount;
-            int cellId = int.Parse(ParentConteiner.name[ParentConteiner.name.Length - 1].ToString());
-            player.caravanGoods.Remove(this.Id);
-        }
-        foreach(var t in player.caravanGoods)
-        {
-            Debug.Log(t);
+            MoveProductBackToProducts(player);
         }
     }
+    private void MoveProductToCaravanCell(Transform ParentConteiner,int GoodsCount,Transform caravanCell,Player player)
+    {
+        var Good = ParentConteiner.transform.GetChild(GoodsCount - 1);
+        Good.SetParent(caravanCell);
+        Good.SetPositionAndRotation(caravanCell.position, Quaternion.identity);
+        player.caravanGoods.Add(Good.GetComponent<Product>());
+    }
+    private void MoveProductBackToProducts(Player player)
+    {
+        transform.SetPositionAndRotation(ProductParent.position + new Vector3((ProductParent.childCount - 1) * 0.2f, 0, 0), Quaternion.identity);
+        transform.SetParent(ProductParent);
+        var SRenderer = transform.GetComponent<SpriteRenderer>();
+        SRenderer.sortingOrder = SRenderer.sortingOrder + 2 - ProductParent.childCount;
+        player.caravanGoods.Remove(this);
+    }
+
 
 }
 public class ProductDictionary
